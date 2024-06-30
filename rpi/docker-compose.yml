@@ -16,61 +16,10 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /home/rpi/plex/config/plex:/config
-      - /home/rpi/plex/media:/data/media
-      - /home/rpi/plex/torrents:/data/torrents
+      - /home/rpi/plex/data/media:/data/media
     restart: unless-stopped
-    
-# Prowlarr
-  prowlarr:
-    image: lscr.io/linuxserver/prowlarr:latest
-    container_name: prowlarr
-    ports:
-      - "9696:9696"
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - UMASK=002
-      - TZ=Asia/Kolkata
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /home/rpi/plex/config/prowlarr:/config
-    restart: unless-stopped
-    
-# Radarr
-  radarr:
-    image: lscr.io/linuxserver/radarr:latest
-    container_name: radarr
-    ports:
-      - "7878:7878"
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - UMASK=002
-      - TZ=Asia/Kolkata
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /home/rpi/plex/config/radarr:/config
-      - /home/rpi/plex/media:/data
-    restart: unless-stopped
-    
-# Sonarr
-  sonarr:
-    image: lscr.io/linuxserver/sonarr:develop
-    container_name: sonarr
-    ports:
-      - "8989:8989"
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - UMASK=002
-      - TZ=Asia/Kolkata
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /home/rpi/plex/config/sonarr:/config
-      - /home/rpi/plex/media:/data
-    restart: unless-stopped
-    
-# Qbittorrent    
+
+# Qbittorrent
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
@@ -84,11 +33,11 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /home/rpi/plex/config/qbittorrent:/config
-      - /home/rpi/plex/torrents:/data/torrents
+      - /home/rpi/plex/data/torrents:/data/torrents
     restart: unless-stopped
 
-# Flaresolverr - For 1377
-  flaresolverr: 
+# Flaresolverr - for 1337x
+  flaresolverr:
     image: flaresolverr/flaresolverr:latest
     container_name: flaresolverr
     environment:
@@ -98,4 +47,60 @@ services:
       - TZ=Asia/Kolkata
     ports:
       - "8191:8191"
+    restart: unless-stopped
+
+# Prowlarr
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    depends_on:
+      - flaresolverr
+    ports:
+      - "9696:9696"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Asia/Kolkata
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/rpi/plex/config/prowlarr:/config
+    restart: unless-stopped
+
+# Radarr
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    depends_on:
+      - qbittorrent
+    ports:
+      - "7878:7878"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Asia/Kolkata
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/rpi/plex/config/radarr:/config
+      - /home/rpi/plex/data:/data
+    restart: unless-stopped
+
+# Sonarr
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:develop
+    container_name: sonarr
+    depends_on:
+      - qbittorrent
+    ports:
+      - "8989:8989"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Asia/Kolkata
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /home/rpi/plex/config/sonarr:/config
+      - /home/rpi/plex/data:/data
     restart: unless-stopped
